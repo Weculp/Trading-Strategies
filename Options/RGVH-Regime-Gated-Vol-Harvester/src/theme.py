@@ -55,6 +55,10 @@ COLORS = {
 def apply_theme(font_size: int = 10, dpi: int = 200) -> None:
     """Apply the institutional theme to matplotlib globally."""
     mpl.rcParams.update({
+        # Render '$' as literal currency sign rather than mathtext delimiter
+        "text.parse_math":     False,
+        "axes.unicode_minus":  False,
+
         "figure.dpi":          dpi,
         "savefig.dpi":         dpi,
         "savefig.bbox":        "tight",
@@ -123,24 +127,31 @@ def title_block(
     subtitle: str | None = None,
     source: str | None = None,
     title_fontsize: int = 14,
-    subtitle_fontsize: int = 10,
-    pad_top: float = 0.04,
+    subtitle_fontsize: int = 9.5,
+    title_y: float = 0.985,
+    subtitle_offset: float = 0.030,
+    source_y: float = 0.005,
 ):
-    """Add a left-aligned title block at the top of a figure plus a footer source."""
-    fig.suptitle("", y=1)  # prevent matplotlib's default title from grabbing space
-    fig.text(0.04, 1 - pad_top, title,
+    """Add a left-aligned title block ABOVE the axes area plus a footer source.
+
+    Title is placed at `title_y` (default 98.5% of figure height), subtitle just
+    below. Caller is responsible for `fig.subplots_adjust(top=...)` low enough
+    to clear ~3-5% of figure height for the title block.
+    """
+    fig.suptitle("", y=1)  # disable default suptitle behaviour
+    fig.text(0.04, title_y, title,
              ha="left", va="top",
              fontsize=title_fontsize, fontweight="bold",
              color=COLORS["ink"])
     if subtitle:
-        fig.text(0.04, 1 - pad_top - 0.045, subtitle,
+        fig.text(0.04, title_y - subtitle_offset, subtitle,
                  ha="left", va="top",
                  fontsize=subtitle_fontsize, fontweight="regular",
                  color=COLORS["ink_soft"], style="italic")
     if source:
-        fig.text(0.04, 0.01, source,
+        fig.text(0.04, source_y, source,
                  ha="left", va="bottom",
-                 fontsize=8, color=COLORS["ink_muted"], style="italic")
+                 fontsize=7.5, color=COLORS["ink_muted"], style="italic")
 
 
 def callout(ax, x, y, text, color=None, ha="center"):

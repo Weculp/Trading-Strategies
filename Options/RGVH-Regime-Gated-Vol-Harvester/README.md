@@ -42,6 +42,19 @@ Depends on the lens — and the honest answer matters.
 
 **The intended use**: not "RGVH instead of SPY", but **a small RGVH overlay on a SPY core portfolio**. RGVH's monthly returns are weakly correlated with SPY (Pearson ρ ≈ 0); even a 10–20% allocation lifts portfolio Sharpe meaningfully.
 
+### Why the absolute-dollar gap looks "huge" at first glance
+
+You'll notice on the equity-curve chart that SPY (rescaled, blue line) ends much higher than RGVH (navy) when both are scaled to the same Reg-T capital. That's not a bug — it's the structural difference between the two strategies:
+
+- **SPY buy-and-hold** deploys 100% of capital up front, so its return is naturally expressed as a percentage of that capital.
+- **RGVH short straddles** receive premium up front; what you actually post is broker margin (~20% of underlying for Reg-T, ~6% for PM).
+
+For the same $1,000 vega-target trade book, peak concurrent capital is **$17,488 on Reg-T** vs **$5,246 on Portfolio Margin**. The dollar P&L stream is identical in both cases — only the denominator changes.
+
+![dollar-comparison](plots/pro/15_dollar_comparison.png)
+
+Result: SPY beats RGVH in absolute dollars on a Reg-T retail account, while RGVH beats SPY in absolute dollars on a PM account. **On Sharpe (risk-adjusted), RGVH wins regardless** — that's the comparison that matters for a portfolio overlay.
+
 ---
 
 ## The three filters

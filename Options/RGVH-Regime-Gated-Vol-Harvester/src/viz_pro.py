@@ -185,7 +185,7 @@ plt.close()
 # ===========================================================================
 print("[03] head-to-head dashboard")
 fig = plt.figure(figsize=(13, 8))
-fig.subplots_adjust(top=0.86, bottom=0.07, left=0.07, right=0.97, wspace=0.25, hspace=0.45)
+fig.subplots_adjust(top=0.84, bottom=0.07, left=0.07, right=0.97, wspace=0.25, hspace=0.45)
 
 gs = fig.add_gridspec(2, 2)
 
@@ -258,7 +258,7 @@ print("[04] monthly returns heatmap")
 
 # Make BOTH heatmaps (RGVH + SPY) on a stacked figure for direct comparison
 fig, axes = plt.subplots(2, 1, figsize=(13, 8.5))
-fig.subplots_adjust(top=0.90, bottom=0.06, left=0.08, right=0.96, hspace=0.35)
+fig.subplots_adjust(top=0.84, bottom=0.06, left=0.08, right=0.96, hspace=0.35)
 
 def heatmap(ax, daily, title, vmin, vmax, fmt=lambda v: f"{v:+.0f}", cmap=None):
     monthly = daily.resample("ME").sum()
@@ -285,7 +285,7 @@ def heatmap(ax, daily, title, vmin, vmax, fmt=lambda v: f"{v:+.0f}", cmap=None):
 
 vmin_pl = float(min(dly_rgvh.resample("ME").sum().min(), 0))
 vmax_pl = float(dly_rgvh.resample("ME").sum().max())
-heatmap(axes[0], dly_rgvh, "(A) RGVH  ·  monthly P&L  ($, per $1k vega)",
+heatmap(axes[0], dly_rgvh, "(A) RGVH  ·  monthly P&L  (USD, per $1k vega)",
         vmin=vmin_pl, vmax=vmax_pl, fmt=lambda v: f"{v:+.0f}")
 
 # SPY in % return
@@ -351,7 +351,7 @@ plt.close()
 # ===========================================================================
 print("[06] drawdown comparison")
 fig, ax = plt.subplots(figsize=(12, 5))
-fig.subplots_adjust(top=0.85, bottom=0.10, left=0.07, right=0.97)
+fig.subplots_adjust(top=0.84, bottom=0.10, left=0.07, right=0.97)
 
 dd_rgvh_pct = (RGVH_PEAK_CAP + dly_rgvh.cumsum())
 dd_rgvh_pct = (dd_rgvh_pct / dd_rgvh_pct.cummax() - 1) * 100
@@ -385,7 +385,7 @@ plt.close()
 # ===========================================================================
 print("[07] return distribution")
 fig, axes = plt.subplots(1, 2, figsize=(13, 5))
-fig.subplots_adjust(top=0.83, bottom=0.13, left=0.06, right=0.98, wspace=0.18)
+fig.subplots_adjust(top=0.84, bottom=0.13, left=0.06, right=0.98, wspace=0.18)
 
 # (A) full-range KDE
 sns.kdeplot(rgvh_pct, ax=axes[0], color=COLORS["rgvh"], lw=2.2, fill=True, alpha=0.30, label="RGVH")
@@ -430,7 +430,7 @@ plt.close()
 # ===========================================================================
 print("[08] filter attribution")
 fig, axes = plt.subplots(1, 2, figsize=(13, 5))
-fig.subplots_adjust(top=0.83, bottom=0.12, left=0.06, right=0.97, wspace=0.30)
+fig.subplots_adjust(top=0.84, bottom=0.12, left=0.06, right=0.97, wspace=0.30)
 
 # (A) Sharpe waterfall
 prog = [
@@ -490,7 +490,7 @@ plt.close()
 # ===========================================================================
 print("[11] OOS holdout")
 fig, ax = plt.subplots(figsize=(10, 5))
-fig.subplots_adjust(top=0.83, bottom=0.13, left=0.10, right=0.96)
+fig.subplots_adjust(top=0.84, bottom=0.13, left=0.10, right=0.96)
 
 splits = ["Split A\nTrain 2013-2020 (8.0y)\nTest  2021-2025 (4.7y)",
           "Split B\nTrain 2013-2022 (10.0y)\nTest  2023-2025 (2.7y)"]
@@ -527,7 +527,7 @@ plt.close()
 # ===========================================================================
 print("[09] regime overlay")
 fig, ax = plt.subplots(figsize=(13, 5.5))
-fig.subplots_adjust(top=0.85, bottom=0.10, left=0.07, right=0.97)
+fig.subplots_adjust(top=0.84, bottom=0.10, left=0.07, right=0.97)
 
 spy_full = panel.set_index("tradeDate")[["S"]].dropna()
 spy_full = spy_full.loc[dly_rgvh.index.min():dly_rgvh.index.max()]
@@ -580,7 +580,7 @@ for t in thrs:
     sharpes.append(st.sharpe(daily))
 
 fig, ax = plt.subplots(figsize=(10, 5))
-fig.subplots_adjust(top=0.83, bottom=0.13, left=0.08, right=0.96)
+fig.subplots_adjust(top=0.84, bottom=0.13, left=0.08, right=0.96)
 peak_i = int(np.argmax(sharpes))
 ax.plot(thrs, sharpes, color=COLORS["positive"], lw=2.5, marker="o", markersize=8,
         markerfacecolor=COLORS["bg"], markeredgewidth=2.0, markeredgecolor=COLORS["positive"])
@@ -611,56 +611,61 @@ print("[12] performance summary table")
 def render_table_image(df: pd.DataFrame, path: Path, title: str, subtitle: str = "",
                        row_label_width: float = 0.35,
                        highlight_col: str | None = None,
-                       cell_height: float = 0.35):
-    """Render a dataframe as a clean banded-row table image."""
+                       row_height: float = 0.42):
+    """Render a dataframe as a clean banded-row table image.
+
+    Title is placed in a reserved figure-coordinate strip ABOVE the table area
+    (using fig.text + manual axes positioning) so it never overlaps row content.
+    """
     n_rows = len(df) + 1  # header
     n_cols = len(df.columns) + 1
-    fig_w = max(10, 1.2 * n_cols)
-    fig_h = 1.0 + n_rows * cell_height
-    fig, ax = plt.subplots(figsize=(fig_w, fig_h))
-    fig.subplots_adjust(top=0.92, bottom=0.05, left=0.03, right=0.97)
+
+    title_pad   = 0.85   # reserved inches at top for title + subtitle
+    bottom_pad  = 0.30
+    table_h     = n_rows * row_height
+    fig_h       = title_pad + table_h + bottom_pad
+    fig_w       = max(10, 1.25 * n_cols)
+
+    fig = plt.figure(figsize=(fig_w, fig_h))
+    table_top = 1 - title_pad / fig_h
+    table_bot = bottom_pad / fig_h
+    ax = fig.add_axes([0.03, table_bot, 0.94, table_top - table_bot])
     ax.axis("off")
 
-    # Title block
-    ax.text(0.0, 1.05, title, transform=ax.transAxes, fontsize=14,
-            fontweight="bold", color=COLORS["ink"], ha="left")
+    # Title strip via figure-level coords
+    title_y    = 1 - 0.30 / fig_h
+    subtitle_y = 1 - 0.62 / fig_h
+    fig.text(0.04, title_y, title, fontsize=14, fontweight="bold",
+             color=COLORS["ink"], ha="left", va="top")
     if subtitle:
-        ax.text(0.0, 1.00, subtitle, transform=ax.transAxes, fontsize=9.5,
-                fontstyle="italic", color=COLORS["ink_soft"], ha="left")
+        fig.text(0.04, subtitle_y, subtitle, fontsize=9.5, fontstyle="italic",
+                 color=COLORS["ink_soft"], ha="left", va="top")
 
-    # Build the matrix of strings
+    # Cell matrix
     cells = [[df.index.name or ""] + list(df.columns)]
     for idx, row in df.iterrows():
         cells.append([str(idx)] + [str(v) for v in row.values])
 
-    # Use matplotlib table
+    # Anchor the table to fill the axes exactly via bbox
     table = ax.table(
-        cellText=cells, loc="center",
-        cellLoc="center",
-        colLoc="center",
+        cellText=cells, loc="center", cellLoc="center", colLoc="center",
+        bbox=[0, 0, 1, 1],
         colWidths=[row_label_width] + [(1 - row_label_width) / (n_cols - 1)] * (n_cols - 1),
     )
     table.auto_set_font_size(False)
     table.set_fontsize(10)
-    table.scale(1, 1.4)
 
-    # Style cells
     for (i, j), cell in table.get_celld().items():
         cell.set_edgecolor(COLORS["muted"])
-        cell.set_linewidth(0.5)
-        if i == 0:  # header
+        cell.set_linewidth(0.4)
+        if i == 0:
             cell.set_facecolor(COLORS["navy"])
             cell.set_text_props(color=COLORS["bg"], weight="bold")
-            cell.set_height(cell_height * 1.2)
         else:
-            if i % 2 == 0:
-                cell.set_facecolor(COLORS["bg_alt"])
-            else:
-                cell.set_facecolor(COLORS["bg"])
+            cell.set_facecolor(COLORS["bg_alt"] if i % 2 == 0 else COLORS["bg"])
             if j == 0:
                 cell.set_text_props(weight="medium", ha="left")
                 cell.PAD = 0.05
-            cell.set_height(cell_height)
 
     fig.savefig(path)
     plt.close()
@@ -731,7 +736,7 @@ render_table_image(
     "Performance summary  ·  RGVH vs benchmarks",
     f"Sample: 2013-07-05 to 2025-08-28 ({(dly_rgvh.index.max()-dly_rgvh.index.min()).days/365.25:.2f} years).  "
     f"All series scaled to $1k vega exposure / $17.5k capital.",
-    row_label_width=0.30, cell_height=0.32,
+    row_label_width=0.30, row_height=0.42,
 )
 
 # Yearly P&L table
@@ -747,15 +752,16 @@ fmt_int    = lambda v: f"${v:,.0f}"      if pd.notna(v) else "—"
 fmt_sharpe = lambda v: f"{v:+.2f}"        if pd.notna(v) else "—"
 fmt_pct    = lambda v: f"{v:.0%}"         if pd.notna(v) else "—"
 yt_disp = pd.DataFrame({
-    "Days":          yt["Days"].astype(int),
-    "RGVH P&L":      yt["RGVH P&L"].apply(fmt_int),
-    "RGVH Sharpe":   yt["RGVH Sharpe"].apply(fmt_sharpe),
-    "RGVH Hit":      yt["RGVH Hit"].apply(fmt_pct),
-    "RGVH Vol":      yt["RGVH Vol"].apply(fmt_int),
-    "RGVH Max DD":   yt["RGVH Max DD"].apply(fmt_int),
-    "SPY P&L":       yt["SPY P&L"].apply(fmt_int),
-    "SPY Sharpe":    yt["SPY Sharpe"].apply(fmt_sharpe),
-}, index=yt["Year"].astype(int))
+    "Days":          yt["Days"].astype(int).values,
+    "RGVH P&L":      yt["RGVH P&L"].apply(fmt_int).values,
+    "RGVH Sharpe":   yt["RGVH Sharpe"].apply(fmt_sharpe).values,
+    "RGVH Hit":      yt["RGVH Hit"].apply(fmt_pct).values,
+    "RGVH Vol":      yt["RGVH Vol"].apply(fmt_int).values,
+    "RGVH Max DD":   yt["RGVH Max DD"].apply(fmt_int).values,
+    "SPY P&L":       yt["SPY P&L"].apply(fmt_int).values,
+    "SPY Sharpe":    yt["SPY Sharpe"].apply(fmt_sharpe).values,
+})
+yt_disp.index = yt["Year"].astype(int).values
 yt_disp.index.name = "Year"
 yt.to_csv(ROOT / "results" / "yearly_table.csv", index=False)
 render_table_image(
@@ -763,7 +769,7 @@ render_table_image(
     PLOTS / "13_yearly_table.png",
     "Calendar-year performance  ·  RGVH vs SPY (rescaled)",
     "All values per $1k vega exposure / $17.5k Reg-T peak capital",
-    row_label_width=0.10, cell_height=0.30,
+    row_label_width=0.10, row_height=0.40,
 )
 
 # Drawdown periods table
@@ -779,15 +785,15 @@ if not dd_table.empty:
         PLOTS / "14_drawdown_periods_table.png",
         "Top-5 drawdown periods  ·  RGVH",
         "Ordered by depth.",
-        row_label_width=0.08, cell_height=0.36,
+        row_label_width=0.08, row_height=0.45,
     )
 
 # ===========================================================================
 # 01 — Executive summary panel (last so we have the building blocks)
 # ===========================================================================
 print("[01] executive summary panel")
-fig = plt.figure(figsize=(14, 9))
-fig.subplots_adjust(top=0.92, bottom=0.05, left=0.05, right=0.97, wspace=0.30, hspace=0.45)
+fig = plt.figure(figsize=(14, 10))
+fig.subplots_adjust(top=0.82, bottom=0.05, left=0.05, right=0.97, wspace=0.32, hspace=0.55)
 gs = fig.add_gridspec(3, 4, height_ratios=[0.25, 0.4, 0.35])
 
 # Top: KPI tiles
@@ -871,7 +877,7 @@ plt.close()
 # ===========================================================================
 print("[GIF] multi-panel animated equity + drawdown")
 fig = plt.figure(figsize=(13, 7))
-fig.subplots_adjust(top=0.86, bottom=0.10, left=0.07, right=0.97, hspace=0.40)
+fig.subplots_adjust(top=0.84, bottom=0.10, left=0.07, right=0.97, hspace=0.40)
 gs = fig.add_gridspec(3, 1, height_ratios=[1.6, 1.0, 0.0001])
 
 axE = fig.add_subplot(gs[0])
@@ -1053,6 +1059,75 @@ fig.update_yaxes(showgrid=True, gridcolor=COLORS["muted"], gridwidth=0.4,
 fig.write_html(INTER / "dashboard.html", include_plotlyjs="cdn",
                config={"displaylogo": False, "modeBarButtonsToRemove":
                        ["lasso2d","select2d","autoScale2d"]})
+
+# ===========================================================================
+# 15 — $ comparison panel: why does SPY's absolute $ dominate at small sizing?
+# ===========================================================================
+print("[15] dollar comparison panel")
+fig, axes = plt.subplots(1, 2, figsize=(13.5, 5.5))
+fig.subplots_adjust(top=0.78, bottom=0.13, left=0.07, right=0.97, wspace=0.30)
+
+# Left panel: annual $ P&L on each capital basis
+bases = [
+    ("Reg-T peak\n($17,488)",   1004 / 17488 * 17488,  17488 * 0.1397,  17488),
+    ("Reg-T avg\n($9,346)",     1004 / 9346  * 9346,   9346  * 0.1397,  9346 ),
+    ("PM peak\n($5,246)",       1004 / 5246  * 5246,   5246  * 0.1397,  5246 ),
+    ("PM avg\n($2,804)",        1004 / 2804  * 2804,   2804  * 0.1397,  2804 ),
+]
+labels = [b[0] for b in bases]
+rgvh_dollars = [b[1] for b in bases]
+spy_dollars  = [b[2] for b in bases]
+
+x = np.arange(len(bases))
+w = 0.36
+b1 = axes[0].bar(x - w/2, rgvh_dollars, w,
+                 color=COLORS["rgvh"],  edgecolor=COLORS["bg"], label="RGVH ann. $ P&L")
+b2 = axes[0].bar(x + w/2, spy_dollars,  w,
+                 color=COLORS["spy"],   edgecolor=COLORS["bg"], label="SPY ann. $ return")
+for xi, (r, s) in enumerate(zip(rgvh_dollars, spy_dollars)):
+    axes[0].text(xi - w/2, r + 60,  f"${r:,.0f}", ha="center", fontsize=9, fontweight="medium")
+    axes[0].text(xi + w/2, s + 60,  f"${s:,.0f}", ha="center", fontsize=9, fontweight="medium")
+axes[0].set_xticks(x); axes[0].set_xticklabels(labels)
+axes[0].set_ylabel("Annual $ P&L on capital base")
+axes[0].yaxis.set_major_formatter(FuncFormatter(format_dollars))
+axes[0].set_title("(A) Absolute dollars by capital basis", loc="left", fontweight="bold")
+axes[0].legend(loc="upper right", fontsize=9)
+# Annotate winners
+for xi, (r, s) in enumerate(zip(rgvh_dollars, spy_dollars)):
+    winner = "RGVH" if r > s else "SPY"
+    color  = COLORS["positive"] if winner == "RGVH" else COLORS["spy"]
+    axes[0].text(xi, max(r, s) * 1.18, winner+" wins",
+                 ha="center", fontsize=8.5, fontweight="bold", color=color,
+                 bbox=dict(boxstyle="round,pad=0.3", fc=COLORS["bg"], ec=color, lw=0.7))
+
+# Right panel: % CAGR on each capital basis (here RGVH varies, SPY is constant 14%)
+rgvh_pct = [1004 / b[3] * 100 for b in bases]
+spy_pct  = [13.97]  * len(bases)
+
+axes[1].bar(x - w/2, rgvh_pct, w, color=COLORS["rgvh"], edgecolor=COLORS["bg"], label="RGVH CAGR (%)")
+axes[1].bar(x + w/2, spy_pct,  w, color=COLORS["spy"],  edgecolor=COLORS["bg"], label="SPY CAGR (%)")
+for xi, (r, s) in enumerate(zip(rgvh_pct, spy_pct)):
+    axes[1].text(xi - w/2, r + 0.6,  f"{r:.1f}%", ha="center", fontsize=9, fontweight="medium")
+    axes[1].text(xi + w/2, s + 0.6,  f"{s:.1f}%", ha="center", fontsize=9, fontweight="medium")
+axes[1].set_xticks(x); axes[1].set_xticklabels(labels)
+axes[1].set_ylabel("Annualised return on capital  (%)")
+axes[1].yaxis.set_major_formatter(FuncFormatter(lambda v, _: f"{v:.0f}%"))
+axes[1].set_title("(B) Same comparison in % terms", loc="left", fontweight="bold")
+axes[1].legend(loc="upper left", fontsize=9)
+
+# Footer note explaining
+fig.text(0.5, 0.02,
+         "RGVH P&L is reported per $1k of vega exposure (approximately $5k–$17k of margin per concurrent position).  "
+         "SPY 'returns' are gross of taxes; RGVH short-vol P&L is taxed at ordinary income rates.",
+         ha="center", va="bottom", fontsize=8, color=COLORS["ink_muted"], style="italic")
+
+title_block(fig,
+    "RGVH vs SPY  ·  why the absolute $ comparison depends on margin type",
+    "Same trade book, four different capital bases. Reg-T retail brokerage SPY wins; portfolio-margin (PM) RGVH wins.",
+    "On Sharpe (risk-adjusted), RGVH wins regardless of capital basis (3.38 vs 0.85).")
+fig.savefig(PLOTS / "15_dollar_comparison.png")
+plt.close()
+
 
 print("\nAll professional visuals generated to:", PLOTS)
 print("Interactive dashboard:", INTER / "dashboard.html")

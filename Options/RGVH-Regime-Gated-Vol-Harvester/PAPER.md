@@ -286,14 +286,29 @@ Of thirteen calendar years, nine are profitable; four are losing, with the worst
 \begin{figure}[H]
 \centering
 \includegraphics[width=\textwidth]{plots/pro/07_return_distribution.png}
-\caption{(A) Daily-return density curves (zoomed $\pm 4$\%): RGVH is more concentrated near zero than SPY but with a thinner right tail and a similarly thin left tail. (B) Monthly-return scatter plot of RGVH against SPY with a linear fit; the slope ($\beta$) and Pearson correlation are reported in-panel.}
+\caption{(A) Daily-return density curves (zoomed $\pm 4$\%): RGVH is more concentrated near zero than SPY but with a thinner right tail and a similarly thin left tail. (B) Monthly-return scatter plot of RGVH against SPY with a linear fit; the slope ($\beta$) and Pearson correlation are reported in-panel.\label{fig:scatter}}
 \end{figure}
 
 # RGVH versus SPY buy-and-hold \label{sec:spy}
 
-## Capital-basis comparison
+## Why the absolute-dollar comparison depends on capital basis
 
-The ``annual return'' of a short-vol strategy depends critically on the capital base used as the denominator. We report four:
+A common confusion when comparing a short-vol strategy to SPY buy-and-hold is that the two strategies have fundamentally different capital structures.
+
+\textbf{SPY buy-and-hold} requires you to deploy 100\% of your invested capital up front; the return is therefore naturally expressed as a percentage of that capital. \textbf{RGVH} short-straddles do not consume capital up front --- you receive premium when you sell. What you must \emph{post} is the broker's margin requirement, which depends on the brokerage tier:
+
+\begin{itemize}
+\item \textbf{Reg-T retail}: short-straddle initial margin $\approx$ 20\% of underlying notional per contract.
+\item \textbf{Portfolio Margin (PM)}: SPAN-style risk-based margin, $\approx$ 6\% of underlying notional in the same situation.
+\end{itemize}
+
+Our backtest book sized to \$1{,}000 of vega per trade (the unit reported throughout this paper) requires a peak concurrent capital of roughly \$17{,}488 in a Reg-T account and roughly \$5{,}246 in a PM account. The annualised dollar P\&L (\$1{,}004) is the same in both --- only the capital denominator differs. Hence:
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=\textwidth]{plots/pro/15_dollar_comparison.png}
+\caption{Absolute-dollar (left) and percentage (right) comparison of RGVH vs SPY total return on four different capital bases. The same RGVH P\&L stream looks materially different relative to SPY depending on the margin tier the trader has access to.}
+\end{figure}
 
 \begin{table}[H]
 \centering
@@ -313,10 +328,14 @@ Portfolio-margin average (\$2{,}804)  & 35.83\%  & 13.97\% \\
 
 The split is clear:
 
-- A **retail Reg-T account** (where short-straddle margin is roughly 20\% of underlying notional) produces lower absolute returns than SPY buy-and-hold.
-- A **portfolio-margin account** (institutional or qualifying retail, where the requirement is roughly 6\%) produces materially higher absolute returns than SPY.
+\begin{itemize}
+\item A \textbf{retail Reg-T account} produces lower absolute returns than SPY buy-and-hold, because the high margin requirement on short straddles dilutes the return.
+\item A \textbf{portfolio-margin account} produces materially higher absolute returns than SPY, because the same trade requires roughly 1/3 of the capital.
+\end{itemize}
 
-In either case, the **risk-adjusted comparison (Sharpe) is dominated by RGVH by a factor of roughly four** (Section~\ref{ssec:riskadj}).
+In either case, the \textbf{risk-adjusted comparison (Sharpe) is dominated by RGVH by a factor of roughly four} (Section~\ref{ssec:riskadj}). Returns and risk are not the same axis.
+
+\textbf{The comparison most readers should care about} is risk-adjusted: a portfolio that allocates a small slice ($\sim$10\%) to RGVH and a large slice ($\sim$90\%) to SPY beats either standalone, because RGVH's monthly returns are weakly correlated with SPY (Pearson $\rho \approx 0$, see Figure~\ref{fig:scatter}) and its volatility is much lower than SPY's per unit of return.
 
 ## Risk-adjusted comparison \label{ssec:riskadj}
 
