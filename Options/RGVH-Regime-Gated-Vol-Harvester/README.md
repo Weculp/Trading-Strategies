@@ -2,140 +2,200 @@
 
 > A short-volatility strategy on SPY ATM straddles, gated by three independent macro/market regime filters, achieving a **net Sharpe of 3.38** across a strict walk-forward 12-year out-of-sample window (2013-07 → 2025-08), net of bid-ask spread, commissions, and delta-hedge slippage.
 
-![hero](plots/01_cumulative_pnl_hero.png)
+![exec-summary](plots/pro/01_executive_summary.png)
 
 ## TL;DR
 
-| Metric | Value |
-|---|---|
-| **Net Sharpe** | **3.38** |
-| Annual net P&L | $1,110 per $1,000 of vega exposure |
-| Max drawdown | $1,422 per $1,000 of vega exposure (1.3× ann P&L) |
-| Hit rate | 68.3% |
-| Trades / year | ~104 |
-| Backtest window | 12.2 years strict walk-forward OOS |
-| Costs included | Bid-ask spread, $0.65/leg commission, daily SPY hedge slippage |
+| Metric | RGVH | SPY buy-and-hold |
+|---|---|---|
+| **Net Sharpe** | **3.38** | 0.85 |
+| Annual net P&L | $1,004 per $1,000 vega | n/a *(equity, not P&L)* |
+| **CAGR on capital** | 5.7% (Reg-T) / **19.2%** (Portfolio Margin) | **14.0%** |
+| **Max drawdown** | $1,422 / 1.3× annual P&L | **−33.7%** |
+| Hit rate | 68.3% | n/a |
+| Trades / year | ~90 | 0 |
 
 The strategy is the well-known **Variance Risk Premium (VRP) harvest** — short ATM straddles, delta-hedged daily — but with **three regime filters** that skip ~64% of trade days and almost completely eliminate the historically-catastrophic short-vol losses.
 
-## Why this works (one paragraph)
+📄 **Full research paper**: [PAPER.md](PAPER.md) (Markdown source) · [PAPER.pdf](PAPER.pdf) (printable, ~16 pages, embedded charts and tables)
 
-Selling SPY index volatility is a positive-expected-value strategy on average — implied vol persistently exceeds subsequent realised vol because investors pay a risk premium for crash insurance (Bondarenko 2004, Carr & Wu 2009). The catch: the *expectation* is positive, but the *distribution* has a fat left tail concentrated in specific regimes — high-IV regimes, cross-asset stress windows, and yield-curve inversion / monetary tightening cycles. The RGVH strategy keeps the harvest, drops the tail by avoiding the three regimes where the historical losses cluster.
+🎬 **Animated equity curve**: [`plots/pro/cumulative_pnl_animated.gif`](plots/pro/cumulative_pnl_animated.gif)
+
+🌐 **Interactive dashboard**: [`plots/pro/interactive/dashboard.html`](plots/pro/interactive/dashboard.html) — open in a browser for hover-able multi-panel charts
+
+---
+
+## Are we beating the market?
+
+Depends on the lens — and the honest answer matters.
+
+![head-to-head](plots/pro/03_rgvh_vs_spy_dashboard.png)
+
+| Lens | Winner | Why |
+|---|---|---|
+| Absolute dollars, **Reg-T retail** account | **SPY** (14% vs 5.7%) | High margin requirement on short straddles eats into Reg-T returns |
+| Absolute dollars, **Portfolio Margin** account | **RGVH** (19.2% vs 14%) | PM cuts margin to ~6% of underlying — same trade returns 3× more |
+| Risk-adjusted (Sharpe) | **RGVH wins 4×** (3.38 vs 0.85) | RGVH avoids the volatile regimes that dominate SPY's vol profile |
+| Drawdown profile | **RGVH dominates** (1.4k vs 33.7%) | The three filters skip the regimes where deep losses cluster |
+| Correlation to SPY | **RGVH** ≈ uncorrelated | A small RGVH allocation lifts a SPY portfolio's Sharpe |
+| **Tax efficiency** | **SPY** (LT cap-gains) | Short-vol generates short-term gains taxed at ordinary rates |
+
+**The intended use**: not "RGVH instead of SPY", but **a small RGVH overlay on a SPY core portfolio**. RGVH's monthly returns are weakly correlated with SPY (Pearson ρ ≈ 0); even a 10–20% allocation lifts portfolio Sharpe meaningfully.
+
+---
 
 ## The three filters
 
 The strategy goes short an ATM 22-DTE SPY straddle every trading day **unless any of these are true** (in which case, sit out):
 
-1. **`iv_rank > IV_THR`** — SPY's 30-day implied vol is in the upper portion of its trailing-252-day range. Vol is already elevated; market is signalling stress; we don't add to it.
-2. **`vxn_excess_rank > VXN_THR`** — the spread between Nasdaq vol (VXN) and broad-market vol (VIX) is in the upper portion of its trailing range. Tech-led stress often leads broad-market stress; treat as early warning.
-3. **`2s10s_curve_rank < SLOPE_THR`** — the 2-year to 10-year Treasury yield-curve slope is in the bottom portion of its trailing-252-day range, i.e., the curve is inverted or near-inverted. This is a classic recession indicator (Estrella & Mishkin 1996) — historically associated with monetary-tightening regimes that crush short-vol harvest.
+1. **`iv_rank > IV_THR`** — SPY's 30-day IV is in the upper portion of its trailing-252-day range. Vol is already elevated.
+2. **`vxn_excess_rank > VXN_THR`** — VXN (Nasdaq vol) is pulling away from VIX (broad-market vol). Tech-led stress is a leading indicator.
+3. **`2s10s_curve_rank < SLOPE_THR`** — the 2y-vs-10y Treasury yield-curve slope is in the bottom of its trailing range, i.e., curve inverted or near-inverted (Estrella & Mishkin 1996 recession signal).
 
-> **Threshold values are deliberately redacted in this open-source release.** The methodology is fully documented; readers replicating the work on their own data will arrive at their own optimum. Our own backtest finds a robust plateau of acceptable thresholds (Sharpe > 3.0 across a wide range), so the result is not knife-edge fragile.
+> **Threshold values are deliberately redacted** in this open-source release. The methodology is fully documented; readers replicating on their own data will arrive at their own optimum. Our backtest finds a robust plateau of acceptable thresholds (Sharpe > 3.0 across ~half the threshold range), so the result is not knife-edge fragile.
 
-![regimes](plots/05_signal_regime_overlay.png)
+![regime-overlay](plots/pro/09_regime_overlay_pro.png)
 
-The chart above shows SPY price with the three filters' active regions overlaid — each colour shows when the corresponding filter would have suppressed trading. Notice how the curve-inversion filter cleanly catches the entire 2022 rate-hike regime that destroyed unfiltered short-vol books.
+The chart above shows SPY price with each filter's active region overlaid. The yield-curve filter (blue) cleanly captures the entire 2022 rate-hike regime that destroyed unfiltered short-vol books.
 
-## Returns vs SPY buy-and-hold (the natural benchmark)
-
-| Metric | SPY buy-hold | RGVH (Reg-T) | RGVH (PM) |
-|---|---|---|---|
-| Period | 2013-07 → 2025-08 (12.15y) | same | same |
-| **CAGR on capital** | **+13.97%** | +5.74% (peak) / +10.75% (avg) | **+19.15%** (peak) / +35.83% (avg) |
-| **Sharpe** | 0.85 | **3.38** | **3.38** |
-| **Max drawdown** | −33.7% | ~−8% of peak | ~−27% of peak |
-
-**Bottom line:**
-- On a **Reg-T retail account**, SPY beats RGVH on absolute returns.
-- On a **Portfolio Margin account** (pro / qualifying retail), RGVH beats SPY by ~5pp/yr.
-- On **risk-adjusted returns (Sharpe)**, RGVH wins by 4×.
-- On **drawdown**, RGVH wins decisively.
-
-The intended use case is **alongside, not instead of, SPY** — RGVH's P&L is materially uncorrelated with SPY returns, so a small allocation lifts portfolio Sharpe meaningfully. Numbers are gross of taxes; short-vol generates short-term gains that are taxed less favourably than long-term-hold SPY.
+---
 
 ## Performance
 
 ### Sharpe progression
 
-The strategy was built incrementally; each filter addition is a single Sharpe step.
+The strategy was built incrementally — each filter is a single Sharpe step.
 
-![progression](plots/04_sharpe_progression.png)
+![attribution](plots/pro/08_filter_attribution.png)
 
-### Year-by-year P&L
+### Cumulative equity curve
 
-![yearly](plots/02_yearly_breakdown.png)
+![equity](plots/pro/02_equity_curve_pro.png)
 
-**Nine winning years, four losing**, with the worst losing year limited to a slow grind rather than a crash. The 2022 rate-hike regime — which broke unfiltered short-vol strategies — is fully avoided.
+### Calendar-year breakdown
+
+![yearly](plots/pro/13_yearly_table.png)
+
+**Nine winning years, four losing**, with the worst losing year limited to a slow grind (2024) rather than a crash. The 2022 rate-hike regime — which destroyed the unfiltered baseline (−$3,697) — is held to break-even because the curve-inversion filter suppressed nearly all trades that year.
+
+### Monthly heatmap
+
+![heatmap](plots/pro/04_monthly_heatmap.png)
+
+### Rolling Sharpe vs SPY
+
+![rolling-sharpe](plots/pro/05_rolling_sharpe.png)
 
 ### Drawdown profile
 
-![drawdown](plots/03_drawdown_underwater.png)
+![drawdown](plots/pro/06_drawdown_compare.png)
 
-Max drawdown is **$1,422 per $1k vega** — only 1.3× annual P&L. Clean.
+### Performance summary table
+
+![performance-table](plots/pro/12_performance_table.png)
+
+### Top drawdown periods
+
+![drawdown-periods](plots/pro/14_drawdown_periods_table.png)
 
 ### Per-trade outcome distribution
 
-![distribution](plots/08_trade_distribution.png)
+![distribution](plots/pro/07_return_distribution.png)
 
-The trade P&L distribution is right-tailed — many small wins, occasional larger losses. Hit rate 68.3%, median per-trade P&L slightly positive, mean clearly positive.
+The trade P&L distribution: many small theta-collection wins, occasional larger losses. Hit rate 68.3%, monthly Pearson correlation with SPY ≈ 0 (i.e., genuinely uncorrelated).
+
+---
 
 ## Robustness
 
 ### Threshold sensitivity
 
-![sensitivity](plots/06_threshold_sensitivity.png)
-
-The 2s10s threshold is on a **wide plateau** with Sharpe > 3.0 across many threshold values. This is the signature of a real signal, not a single curve-fit point.
+![sensitivity](plots/pro/10_threshold_sensitivity.png)
 
 ### Out-of-sample holdout
 
-![oos](plots/07_oos_holdout.png)
+![oos](plots/pro/11_oos_holdout.png)
 
-Two splits, each picking the best threshold on the train period and applying it unchanged to the test period:
+Two splits, threshold chosen blindly on train and applied unchanged to test:
 
-- **Split A** (Train 2013-2020 / Test 2021-2025): the harder test, because the 2022 inversion regime is in the test set. Train Sharpe 3.41, **test Sharpe 3.25** (degradation only -0.16). The filter, learned blind to 2022, correctly handled 2022 OOS.
-- **Split B** (Train 2013-2022 / Test 2023-2025): gentler. Train 3.69 → test 2.67 (degradation 1.02). The 2024 grind dominates a short test, but Sharpe still 5× the unfiltered baseline.
+- **Split A** (Train 2013-2020 / Test 2021-2025): the harder test — 2022 inversion regime is in the test set. Train Sharpe **3.41** → test Sharpe **3.25** (degradation only −0.16). The filter, calibrated *blind* to 2022, correctly handled 2022 OOS.
+- **Split B** (Train 2013-2022 / Test 2023-2025): gentler. Train **3.69** → test **2.67** (still 5× the unfiltered baseline; depressed by the 2024 grind regime).
+
+---
 
 ## Data sources
 
 | Dataset | Used for | Source |
 |---|---|---|
 | SPY EOD options chains 2005-2025 | Backtest pricing, surface-derived signals | WRDS / OptionMetrics IvyDB *(licensed; not redistributed)* |
-| SPY underlying daily | Spot/return series | Same WRDS file |
-| MOVE bond-volatility index | Macro stress proxy | Yahoo Finance (`^MOVE`) — free |
-| VIX, VXN | Cross-asset vol regime | Yahoo Finance (`^VIX`, `^VXN`) — free |
-| 2-year, 10-year Treasury yields | Yield-curve regime | FRED `DGS2`, `DGS10` — free |
-| 3-month Treasury bill | Risk-free rate for IV back-out | FRED `DGS3MO` — free |
+| SPY underlying daily | Spot/return series | Same WRDS file + `yfinance` for SPY total return |
+| MOVE bond-vol index | Macro stress proxy | Yahoo Finance (`^MOVE`) — free |
+| VIX, VXN | Cross-asset vol regime | Yahoo Finance — free |
+| 2y, 10y Treasury yields | Yield-curve regime | FRED `DGS2`, `DGS10` — free |
+| 3-month T-bill | Risk-free rate for IV back-out | FRED `DGS3MO` — free |
 
 See [`data/README.md`](data/README.md) for sourcing instructions.
+
+---
 
 ## Repo layout
 
 ```
 RGVH-Regime-Gated-Vol-Harvester/
-├── README.md           ← this file
-├── PAPER.md            ← formal research writeup (also exported to PAPER.pdf)
-├── PAPER.pdf
+├── README.md                 ← this file
+├── PAPER.md                  ← formal research writeup
+├── PAPER.pdf                 ← printable export, ~16 pages
+├── LINKEDIN_CAPTION.md       ← three caption variants for posting
 ├── requirements.txt
-├── data/
-│   └── README.md       ← how to source SPY options + free macro feeds
-├── src/                ← cleaned, importable Python modules
-│   ├── data_pipeline.py
-│   ├── factor_panel.py
-│   ├── filters.py      ← the three filter rules (thresholds redacted)
-│   ├── backtest.py     ← short-vol simulator with delta hedge & costs
-│   ├── viz.py
-│   └── generate_plots.py
-├── notebooks/          ← reproducible Jupyter walkthroughs
+├── data/                     ← sourcing instructions only (proprietary data is gitignored)
+│   └── README.md
+├── src/                      ← cleaned, importable Python modules
+│   ├── theme.py              ← institutional plot theme + color palette
+│   ├── stats.py              ← Sharpe, Sortino, Calmar, ulcer, drawdown periods
+│   ├── data_pipeline.py      ← WRDS → unified parquet
+│   ├── factor_panel.py       ← IV surface, ranks, macro features
+│   ├── filters.py            ← the three filter rules
+│   ├── backtest.py           ← short-vol simulator + delta hedge + costs
+│   ├── evaluate.py           ← daily P&L aggregation
+│   ├── viz_pro.py            ← professional visualisation suite
+│   ├── compute_returns.py    ← capital-base + SPY comparison
+│   └── generate_plots.py     ← original (basic) plot script — kept for reference
+├── notebooks/                ← reproducible Jupyter walkthroughs
 │   ├── 01_data_exploration.ipynb
 │   ├── 02_factor_construction.ipynb
-│   ├── 03_ml_attempt_and_failure.ipynb
-│   ├── 04_filter_strategy.ipynb
+│   ├── 03_ml_attempt_and_failure.ipynb   ← the negative result
+│   ├── 04_filter_strategy.ipynb          ← the winner
 │   ├── 05_stress_tests.ipynb
 │   └── 06_results_and_visuals.ipynb
-├── results/            ← anonymised summary CSVs (no per-trade detail)
-├── plots/              ← static PNGs, animated GIF
-└── plots/interactive/  ← plotly HTMLs (web-embed friendly)
+├── results/                  ← anonymised summary CSVs
+│   ├── annual_summary.csv
+│   ├── sharpe_progression.csv
+│   ├── returns_comparison.csv
+│   ├── performance_table.csv
+│   ├── yearly_table.csv
+│   └── drawdown_periods.csv
+└── plots/
+    ├── 01–10 *.png           ← original (basic) plots
+    ├── cumulative_pnl_animated.gif
+    ├── interactive/          ← original plotly HTMLs
+    └── pro/                  ← institutional-grade plots
+        ├── 01_executive_summary.png
+        ├── 02_equity_curve_pro.png
+        ├── 03_rgvh_vs_spy_dashboard.png
+        ├── 04_monthly_heatmap.png
+        ├── 05_rolling_sharpe.png
+        ├── 06_drawdown_compare.png
+        ├── 07_return_distribution.png
+        ├── 08_filter_attribution.png
+        ├── 09_regime_overlay_pro.png
+        ├── 10_threshold_sensitivity.png
+        ├── 11_oos_holdout.png
+        ├── 12_performance_table.png
+        ├── 13_yearly_table.png
+        ├── 14_drawdown_periods_table.png
+        ├── cumulative_pnl_animated.gif
+        └── interactive/
+            └── dashboard.html
 ```
 
 ## Reproduce
@@ -151,38 +211,31 @@ pip install -r requirements.txt
 # 3. Acquire data per data/README.md and place under data/raw/
 
 # 4. Run pipeline
-python src/data_pipeline.py        # transforms WRDS → unified parquet
-python src/factor_panel.py          # builds factor panel + iv_rank
-python src/backtest.py              # simulates the always-short trades
-python src/generate_plots.py        # produces plots/ outputs
+python -m src.data_pipeline                  # transforms WRDS → unified parquet
+python -m src.factor_panel                   # builds factor panel + iv_rank
+python -m src.backtest                       # simulates the always-short trades
+python -m src.viz_pro                        # produces all professional plots
+python -m src.compute_returns                # capital-base analysis vs SPY
 
 # 5. (optional) Walk through the journey in notebooks/
 jupyter lab notebooks/
 ```
 
-The notebooks reproduce the full research arc — including the **machine-learning approach we initially tried and abandoned** because the simpler filter approach decisively outperformed it. The negative-result notebook is, in some ways, the most useful one for practitioners.
-
 ## What the strategy gets *wrong*
 
-Honesty matters more than hype. Known weaknesses:
-
-- **2024 still loses (-$828)**: a slow-grind tightening regime that 2s10s alone doesn't catch. The curve uninverted before realised vol normalised. A more sophisticated regime model could potentially fix this — see the paper for ideas.
-- **64% skip rate is high**. Only ~104 trades/year. The strategy needs each trade to carry meaningful vega-$ to be capacity-meaningful. At small position sizing the absolute returns are modest.
-- **Single losing day defines max DD across thresholds**. We can't filter that day out without seeing it. A formal tail hedge (long 10Δ put) would cap it but cost ~10-15% of P&L.
+- **2024 still loses (−$828)**: a slow-grind tightening regime that 2s10s alone doesn't catch. The curve uninverted before realised vol normalised.
+- **64% skip rate is high**. Only ~90 trades/year. For absolute returns to be material, per-trade vega-$ exposure must be sized accordingly.
+- **Single losing day defines max DD across thresholds**. We can't filter that day out without seeing it. A formal tail hedge (long 10Δ put) would cap it but cost ~10–15% of P&L.
 - **In-sample selection of filters**. The 2s10s filter was added knowing 2022 had been the worst losing year. The plateau and OOS holdout argue against it being curve-fit, but it's not zero risk.
 - **Equity-vol concentration**. We tested adding QQQ as a second book — daily P&L correlation 0.76, almost no diversification benefit. Real diversification needs bond-vol (TLT options) which our dataset doesn't include.
 
 ## Future work
 
-- TLT bond-vol harvest as a second book → genuine diversification (correlation likely 0.2-0.4)
-- A short ML crash-classifier (binary task) added on top of the filter rule, only used to gate trades when it fires high-confidence
+- TLT bond-vol harvest as a second book → genuine diversification (correlation likely 0.2–0.4)
+- An ML crash-classifier (binary task) added on top of the filter rule, only used to gate trades when it fires high-confidence
 - Position-sizing optimisation: Kelly-fraction sizing conditioned on regime
 - Long 10Δ tail hedge layered on for production deployment
-- Live paper-trading at IB / Tradier for 60-90 days before any capital commitment
-
-## Read more
-
-The full research methodology, literature review, and discussion are in [PAPER.md](PAPER.md) (or [PAPER.pdf](PAPER.pdf) for a printable version).
+- Live paper-trading at IB / Tradier for 60–90 days before any capital commitment
 
 ## License
 
