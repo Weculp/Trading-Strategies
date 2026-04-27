@@ -36,6 +36,23 @@ The strategy goes short an ATM 22-DTE SPY straddle every trading day **unless an
 
 The chart above shows SPY price with the three filters' active regions overlaid — each colour shows when the corresponding filter would have suppressed trading. Notice how the curve-inversion filter cleanly catches the entire 2022 rate-hike regime that destroyed unfiltered short-vol books.
 
+## Returns vs SPY buy-and-hold (the natural benchmark)
+
+| Metric | SPY buy-hold | RGVH (Reg-T) | RGVH (PM) |
+|---|---|---|---|
+| Period | 2013-07 → 2025-08 (12.15y) | same | same |
+| **CAGR on capital** | **+13.97%** | +5.74% (peak) / +10.75% (avg) | **+19.15%** (peak) / +35.83% (avg) |
+| **Sharpe** | 0.85 | **3.38** | **3.38** |
+| **Max drawdown** | −33.7% | ~−8% of peak | ~−27% of peak |
+
+**Bottom line:**
+- On a **Reg-T retail account**, SPY beats RGVH on absolute returns.
+- On a **Portfolio Margin account** (pro / qualifying retail), RGVH beats SPY by ~5pp/yr.
+- On **risk-adjusted returns (Sharpe)**, RGVH wins by 4×.
+- On **drawdown**, RGVH wins decisively.
+
+The intended use case is **alongside, not instead of, SPY** — RGVH's P&L is materially uncorrelated with SPY returns, so a small allocation lifts portfolio Sharpe meaningfully. Numbers are gross of taxes; short-vol generates short-term gains that are taxed less favourably than long-term-hold SPY.
+
 ## Performance
 
 ### Sharpe progression
