@@ -10,8 +10,9 @@
 |---|---|---|
 | **Net Sharpe** | **3.38** | 0.85 |
 | Annual net P&L | $1,004 per $1,000 vega | n/a *(equity, not P&L)* |
-| **CAGR on capital** | 5.7% (Reg-T) / **19.2%** (Portfolio Margin) | **14.0%** |
-| **Max drawdown** | $1,422 / 1.3× annual P&L | **−33.7%** |
+| **CAGR (compounded, returns reinvested)** | 5.7% (Reg-T) / **20.1%** (Portfolio Margin) | **13.5%** |
+| **$100k → after 12.15y** | $200k (Reg-T) / **$1.00M (PM)** | $491k |
+| **Max drawdown** | −7.8% (Reg-T) / −23.9% (PM) | **−33.7%** |
 | Hit rate | 68.3% | n/a |
 | Trades / year | ~90 | 0 |
 
@@ -22,6 +23,8 @@ The strategy is the well-known **Variance Risk Premium (VRP) harvest** — short
 🎬 **Animated equity curve**: [`plots/pro/cumulative_pnl_animated.gif`](plots/pro/cumulative_pnl_animated.gif)
 
 🌐 **Interactive dashboard**: [`plots/pro/interactive/dashboard.html`](plots/pro/interactive/dashboard.html) — open in a browser for hover-able multi-panel charts
+
+🆚 **Apples-to-apples vs SPY** *(new)*: [`plots/pro/interactive/spy_vs_rgvh_compounded.html`](plots/pro/interactive/spy_vs_rgvh_compounded.html) — same starting capital deployed in each strategy, returns compounded both sides, slider for $10k → $500k starting capital. **$100k starting capital after 12.15 years**: SPY → $491k · RGVH on Reg-T → $200k · **RGVH on Portfolio Margin → $1.00M** (10× money).
 
 ---
 
