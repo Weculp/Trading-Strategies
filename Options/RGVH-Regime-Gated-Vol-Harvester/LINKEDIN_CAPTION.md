@@ -1,17 +1,17 @@
-# LinkedIn launch — caption options
+# LinkedIn launch — caption + media options
 
-Three variants below: pick the tone that fits your audience. All include a hook, a payoff, the honest-fail story, and a clear CTA.
+## Recommended single-media format: the animated GIF ⭐
 
-For the post format: a **4-image carousel** is the highest-engagement option on LinkedIn for content like this. Suggested images in order:
+[`plots/pro/100k_three_strategies.gif`](plots/pro/100k_three_strategies.gif) (1.3 MB, 10.8 sec, 1430×770 px) — auto-plays in LinkedIn feed, tells the whole story in 10 seconds: $100k starting capital, 12 years compounded, RGVH on Portfolio Margin reaches $1M while S&P 500 reaches $491k. Maximum hook.
 
-1. `plots/01_cumulative_pnl_hero.png` (the equity curve — opens the story)
-2. `plots/04_sharpe_progression.png` (Sharpe lift bars — quantifies the journey)
-3. `plots/02_yearly_breakdown.png` (year-by-year — shows it works in messy reality)
-4. `plots/06_threshold_sensitivity.png` (the plateau — defends against "you curve-fit" comments)
+## Alternative: 4-image carousel
 
-Alternative single-image post: just the hero (`01_cumulative_pnl_hero.png`).
+If you'd rather post a static carousel:
 
-If LinkedIn supports GIF auto-play in your country, `cumulative_pnl_animated.gif` makes a great single-image post with motion.
+1. `plots/pro/01_executive_summary.png` (the exec summary — opens the story)
+2. `plots/pro/03_rgvh_vs_spy_dashboard.png` (4-panel head-to-head)
+3. `plots/pro/02_equity_curve_pro.png` (the equity curve)
+4. `plots/pro/06_threshold_sensitivity.png` (plateau — defends against "curve-fit" comments)
 
 ---
 
