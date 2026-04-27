@@ -1,0 +1,47 @@
+# Proprietary / licensed data — DO NOT commit
+*.parquet
+*.csv
+!**/results/*.csv
+data/*.zip
+data/wrds/
+data/raw/
+data/processed/
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+*.egg-info/
+.pytest_cache/
+.mypy_cache/
+.ipynb_checkpoints/
+
+# Virtual envs
+venv/
+.venv/
+env/
+.env
+
+# IDE
+.vscode/
+.idea/
+*.swp
+.DS_Store
+Thumbs.db
+
+# Plots — keep PNGs/GIFs/HTMLs but ignore intermediate artefacts
+plots/_tmp/
+plots/*.cache
+
+# Paper build artefacts
+paper/*.aux
+paper/*.log
+paper/*.out
+paper/*.toc
+paper/*.synctex.gz
+
+# OS
+*.bak
+*~

@@ -1,0 +1,6 @@
+iteration,net_sharpe
+Unfiltered VRP,0.48
++ iv_rank filter,1.71
++ vxn_excess filter,2.34
++ threshold tuning,2.49
++ 2s10s curve filter (RGVH),3.38
